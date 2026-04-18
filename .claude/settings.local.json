@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bunx create-next-app@latest *)",
+      "Bash(bun --version)"
+    ]
+  }
+}
