@@ -22,7 +22,7 @@ Future handoff: refboi analysis pages will deep-link to midiboi with key/BPM/gen
 
 - Next.js 15 (App Router) + TypeScript
 - Tailwind CSS v4 + shadcn/ui
-- Bun (package manager + runtime — prefer `bun` over `npm`/`pnpm`/`yarn`)
+- npm (package manager)
 - Supabase for storage (shared instance, namespaced tables per product)
 - Claude Sonnet 4.6 via Anthropic API
 - Deploy: Vercel (single deployment, all products)
@@ -94,7 +94,6 @@ If a task drifts toward any of the above, push back and remind me of the boundar
 - **Essentia.js is WASM, client-side only.** Use `'use client'` + dynamic import with `{ ssr: false }`. Verify Vercel serves `.wasm` with `application/wasm` — may need `next.config.ts` headers.
 - **15-minute audio cap.** Enforce client-side after metadata load, before decoding. Downsample to mono 22kHz before handing to Essentia.
 - **Tailwind v4 breaking changes.** CSS-first config, `@theme` directive. Verify shadcn components are v4-compatible when copying.
-- **Bun runtime quirks.** If Next dev server HMR misbehaves, fall back to `bun install` + `node` for dev.
 
 ## What "done" looks like for refboi W2
 
