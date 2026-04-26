@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { analyzeAudio } from "@/lib/audio/analyze";
 import { parseTrackMetadata } from "@/lib/audio/metadata";
@@ -77,6 +78,23 @@ export default function RefboiWorkspace() {
 
   return (
     <div style={{ fontFamily: "monospace", padding: "2rem", maxWidth: 960 }}>
+      <Link
+        href="/"
+        aria-label="back to home"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "0.4rem",
+          color: "#888",
+          textDecoration: "none",
+          fontSize: 13,
+          marginBottom: "0.5rem",
+        }}
+      >
+        <span aria-hidden="true">←</span>
+        <span>home</span>
+      </Link>
+
       <h1>refboi</h1>
 
       <Uploader onFile={handleFile} />

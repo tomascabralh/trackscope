@@ -27,7 +27,20 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div className="flex-1">{children}</div>
+        <footer
+          style={{
+            fontFamily: "monospace",
+            fontSize: 12,
+            color: "#666",
+            padding: "1.25rem 2rem",
+            borderTop: "1px solid #1f1f1f",
+          }}
+        >
+          made by tch
+        </footer>
+      </body>
     </html>
   );
 }
