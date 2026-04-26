@@ -45,4 +45,21 @@ export interface AnalysisResult {
   monoData: Float32Array;
   sampleRate: number;
   durationS: number;
+  originalSampleRate: number;
+  originalChannels: number;
+}
+
+export interface TrackMetadata {
+  title?: string;
+  artist?: string;
+  album?: string;
+  year?: number;
+  genre?: string;
+  trackNumber?: number;
+  bitrateKbps?: number;
+  codec?: string;
+  container?: string;
+  coverDataUrl?: string;
+  fileName: string;
+  fileSizeBytes: number;
 }

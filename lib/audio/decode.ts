@@ -5,6 +5,8 @@ export interface DecodedAudio {
   monoData: Float32Array;
   sampleRate: number;
   durationS: number;
+  originalSampleRate: number;
+  originalChannels: number;
 }
 
 export async function decodeToMono22k(file: File): Promise<DecodedAudio> {
@@ -20,7 +22,11 @@ export async function decodeToMono22k(file: File): Promise<DecodedAudio> {
     );
   }
 
-  const frameCount = Math.ceil(audioBuffer.duration * TARGET_SAMPLE_RATE);
+  const originalSampleRate = audioBuffer.sampleRate;
+  const originalChannels = audioBuffer.numberOfChannels;
+  const durationS = audioBuffer.duration;
+
+  const frameCount = Math.ceil(durationS * TARGET_SAMPLE_RATE);
   const offlineCtx = new OfflineAudioContext(1, frameCount, TARGET_SAMPLE_RATE);
   const source = offlineCtx.createBufferSource();
   source.buffer = audioBuffer;
@@ -32,6 +38,8 @@ export async function decodeToMono22k(file: File): Promise<DecodedAudio> {
   return {
     monoData,
     sampleRate: TARGET_SAMPLE_RATE,
-    durationS: audioBuffer.duration,
+    durationS,
+    originalSampleRate,
+    originalChannels,
   };
 }

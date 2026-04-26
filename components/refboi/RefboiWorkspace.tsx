@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { analyzeAudio } from "@/lib/audio/analyze";
+import { parseTrackMetadata } from "@/lib/audio/metadata";
 import { bandsToChartSeries } from "@/lib/audio/spectral";
-import type { AnalysisResult } from "@/lib/audio/types";
+import type { AnalysisResult, TrackMetadata } from "@/lib/audio/types";
 import Uploader from "./Uploader";
 import ResultsPanel from "./ResultsPanel";
+import TrackInfo from "./TrackInfo";
 import WaveformTimeline from "./WaveformTimeline";
 import SpectralBands from "./SpectralBands";
 
@@ -15,6 +17,7 @@ type WorkspaceState =
   | {
       status: "done";
       result: AnalysisResult;
+      metadata: TrackMetadata;
       peaks: number[];
       audioUrl: string;
     }
@@ -35,10 +38,13 @@ export default function RefboiWorkspace() {
     if (state.status === "done") URL.revokeObjectURL(state.audioUrl);
     setState({ status: "analyzing" });
     try {
-      const result = await analyzeAudio(file);
+      const [result, metadata] = await Promise.all([
+        analyzeAudio(file),
+        parseTrackMetadata(file),
+      ]);
       const peaks = peaksFromMono(result.monoData, PEAK_BUCKETS);
       const audioUrl = URL.createObjectURL(file);
-      setState({ status: "done", result, peaks, audioUrl });
+      setState({ status: "done", result, metadata, peaks, audioUrl });
     } catch (err) {
       setState({
         status: "error",
@@ -64,6 +70,12 @@ export default function RefboiWorkspace() {
 
       {state.status === "done" && (
         <>
+          <TrackInfo
+            metadata={state.metadata}
+            durationS={state.result.durationS}
+            originalSampleRate={state.result.originalSampleRate}
+            originalChannels={state.result.originalChannels}
+          />
           <ResultsPanel
             bpm={state.result.bpm}
             musicalKey={state.result.key}

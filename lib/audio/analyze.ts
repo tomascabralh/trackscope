@@ -7,7 +7,13 @@ import type { AnalysisResult } from "./types";
 export type { AnalysisResult } from "./types";
 
 export async function analyzeAudio(file: File): Promise<AnalysisResult> {
-  const { monoData, sampleRate, durationS } = await decodeToMono22k(file);
+  const {
+    monoData,
+    sampleRate,
+    durationS,
+    originalSampleRate,
+    originalChannels,
+  } = await decodeToMono22k(file);
   const essentia = await getEssentia();
 
   const bpmVector = essentia.arrayToVector(monoData);
@@ -40,5 +46,7 @@ export async function analyzeAudio(file: File): Promise<AnalysisResult> {
     monoData,
     sampleRate,
     durationS,
+    originalSampleRate,
+    originalChannels,
   };
 }
