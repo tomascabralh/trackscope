@@ -49,6 +49,22 @@ export interface AnalysisResult {
   originalChannels: number;
 }
 
+export type AnalysisPhase =
+  | "decoding"
+  | "loading-essentia"
+  | "extracting-tempo"
+  | "extracting-key"
+  | "extracting-loudness"
+  | "extracting-features"
+  | "detecting-sections";
+
+export interface AnalysisProgress {
+  phase: AnalysisPhase;
+  fraction: number;
+}
+
+export type ProgressCallback = (p: AnalysisProgress) => void;
+
 export interface TrackMetadata {
   title?: string;
   artist?: string;

@@ -2,6 +2,7 @@ import type { FeatureFrames } from "./types";
 
 const FRAME_SIZE = 4096;
 const HOP_SIZE = 2048;
+const PROGRESS_STEPS = 50;
 
 const BAND_RANGES = {
   sub: [20, 60],
@@ -13,12 +14,13 @@ const BAND_RANGES = {
 
 type BandKey = keyof typeof BAND_RANGES;
 
-export function extractFrameFeatures(
+export async function extractFrameFeatures(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   essentia: any,
   monoData: Float32Array,
-  sampleRate: number
-): FeatureFrames {
+  sampleRate: number,
+  onFraction?: (f: number) => void
+): Promise<FeatureFrames> {
   const frames = essentia.FrameGenerator(monoData, FRAME_SIZE, HOP_SIZE);
   const frameCount = frames.size();
 
@@ -32,6 +34,7 @@ export function extractFrameFeatures(
     high: new Float32Array(frameCount),
   };
   const hopSeconds = HOP_SIZE / sampleRate;
+  const yieldEvery = Math.max(1, Math.floor(frameCount / PROGRESS_STEPS));
 
   for (let i = 0; i < frameCount; i++) {
     const frame = frames.get(i);
@@ -45,6 +48,11 @@ export function extractFrameFeatures(
     for (const key of Object.keys(BAND_RANGES) as BandKey[]) {
       const [lo, hi] = BAND_RANGES[key];
       bands[key][i] = essentia.EnergyBand(spectrum, sampleRate, lo, hi).energyBand;
+    }
+
+    if (onFraction && (i % yieldEvery === 0 || i === frameCount - 1)) {
+      onFraction(i / Math.max(1, frameCount - 1));
+      await new Promise((r) => setTimeout(r, 0));
     }
   }
 
