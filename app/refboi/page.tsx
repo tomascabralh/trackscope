@@ -1,5 +1,5 @@
-import AudioAnalyzer from "@/components/refboi/AudioAnalyzer";
+import RefboiWorkspace from "@/components/refboi/RefboiWorkspace";
 
 export default function RefboiPage() {
-  return <AudioAnalyzer />;
+  return <RefboiWorkspace />;
 }
