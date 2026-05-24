@@ -8,7 +8,7 @@ A family of web tools for electronic music producers. Single Next.js app, multip
 
 Analyze reference tracks → producer-language breakdowns. Drop a track, get BPM/key/LUFS, structural timeline, spectral analysis, and a Claude-generated "production notes" breakdown.
 
-**Status: W1 shipped (audio spine — BPM/key/LUFS from file upload). W2 next.**
+**Status: W1 + W2 shipped (audio spine + structure/visuals). W3 in progress — Claude breakdown (design approved, building now).**
 
 ### midiboi (planned, not started)
 
@@ -62,22 +62,27 @@ components/
 
 Shared code lives in `lib/` and `components/ui/`. Product-specific code stays in its own subfolder. No barrel exports.
 
-## Current phase: refboi W2 — Structure + visuals
+## Current phase: refboi W3 — Claude breakdown
+
+Design: `docs/superpowers/specs/2026-05-17-refboi-w3-claude-breakdown-design.md`.
 
 **In scope this week:**
 
-- Heuristic section detection (intro/breakdown/drop) from audio features
-- wavesurfer.js timeline with section markers
-- Basic spectral visualization
+- Anthropic SDK client + streaming Route Handler (`app/api/refboi/breakdown`)
+- Per-section spectral averaging + prompt-building helpers (`lib/refboi/`)
+- `<Breakdown />` client component: auto-run on analysis `done`, stream markdown, regenerate button
+- The system prompt itself (the IP — expect most of the work here)
 
 **Explicitly out of scope right now:**
 
 - Any midiboi work (see above — do not start)
-- Claude API integration → refboi W3
+- Rate limiting / per-IP caps → refboi W5 (must land before public deploy)
 - YouTube ingestion → refboi W4
-- Supabase / permalinks → refboi W5
+- Supabase / permalinks / persistence → refboi W5
 - Landing page (bois hub or refboi) → refboi W5
 - Stem separation, Ableton export, auth, payments, mobile polish
+
+**Shipped (W2):** section detection, wavesurfer timeline with markers, spectral viz, track metadata, transport controls, pipeline progress.
 
 If a task drifts toward any of the above, push back and remind me of the boundary.
 
@@ -95,9 +100,11 @@ If a task drifts toward any of the above, push back and remind me of the boundar
 - **15-minute audio cap.** Enforce client-side after metadata load, before decoding. Downsample to mono 22kHz before handing to Essentia.
 - **Tailwind v4 breaking changes.** CSS-first config, `@theme` directive. Verify shadcn components are v4-compatible when copying.
 
-## What "done" looks like for refboi W2
+## What "done" looks like for refboi W3
 
-I can upload an audio file and see: a wavesurfer timeline with visual section markers (intro / buildup / drop / breakdown / outro) that roughly line up with where those sections actually are in the track. Basic spectral viz showing frequency balance across the track. No polish beyond making it readable. Works in Chrome on desktop.
+I can upload an audio file in Chrome and, within ~1–3s of analysis finishing, see a "production notes" breakdown stream into the page below the spectral viz — overall summary on top, per-section commentary keyed to the detected sections. A regenerate button replays the prompt. Killing the server mid-stream shows a visible error, not a hang.
+
+**W2 (done):** upload → wavesurfer timeline with section markers (intro / buildup / drop / breakdown / outro) roughly aligned to the track, plus spectral viz showing frequency balance. Readable, Chrome desktop.
 
 ## North star
 
