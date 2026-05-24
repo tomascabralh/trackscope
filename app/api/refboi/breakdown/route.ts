@@ -61,9 +61,16 @@ export async function POST(req: Request) {
             }
           }
           controller.close();
-        } catch {
-          controller.error(new Error("stream failed"));
+        } catch (err) {
+          // Response headers are already committed, so this never reaches the
+          // client body — but it surfaces the real cause to server logs.
+          controller.error(err instanceof Error ? err : new Error("stream failed"));
         }
+      },
+      // Client disconnected (navigated away, or hit regenerate). Stop the SDK
+      // stream so we don't keep generating — and paying for — tokens.
+      cancel() {
+        stream.abort();
       },
     });
 
@@ -71,6 +78,9 @@ export async function POST(req: Request) {
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
   } catch {
+    // Only reached if .stream() throws synchronously (e.g. invalid params)
+    // before the streaming Response is committed. Mid-stream errors go through
+    // controller.error() above, not here.
     return Response.json({ error: "breakdown failed" }, { status: 500 });
   }
 }
