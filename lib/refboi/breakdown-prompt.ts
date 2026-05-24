@@ -49,7 +49,7 @@ export function buildBreakdownMessages(input: BreakdownInput): {
     `| integrated loudness | ${input.lufs} LUFS |`,
     `| duration | ${mmss(input.durationS)} |`,
     ``,
-    `Sections (band levels in dBFS-ish, higher = louder):`,
+    `Sections (band levels in dBFS, higher = louder):`,
     ``,
   ];
   const sectionLines = input.sections.map((s) => {

@@ -10,7 +10,10 @@ export interface SectionWithSpectra {
 const BANDS = ["sub", "low", "mid", "highMid", "high"] as const;
 const EPS = 1e-9;
 
-const toDb = (linear: number) => Math.round(20 * Math.log10(linear + EPS) * 10) / 10;
+function toDb(linear: number): number {
+  const db = 20 * Math.log10(linear + EPS);
+  return Math.round(db * 10) / 10;
+}
 
 export function sectionsWithSpectra(
   sections: Section[],
@@ -22,6 +25,9 @@ export function sectionsWithSpectra(
     for (let i = 0; i < times.length; i++) {
       if (times[i] >= s.start && times[i] < s.end) idx.push(i);
     }
+    // A section always spans frames in practice (boundaries are derived from
+    // this same frame grid), so the empty branch is a defensive floor only —
+    // it yields the noise-floor dB rather than NaN for a degenerate range.
     const meanDb = (arr: Float32Array) =>
       idx.length === 0
         ? toDb(0)
