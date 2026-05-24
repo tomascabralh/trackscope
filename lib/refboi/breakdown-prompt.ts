@@ -8,15 +8,9 @@ export interface BreakdownInput {
   sections: SectionWithSpectra[];
 }
 
-export interface SystemBlock {
-  type: "text";
-  text: string;
-  cache_control: { type: "ephemeral" };
-}
-
-export interface UserMessage {
-  role: "user";
-  content: string;
+export interface BreakdownMessages {
+  system: string;
+  user: string;
 }
 
 // Iterated heavily later — this is the IP. Keep the output contract stable.
@@ -46,10 +40,7 @@ function mmss(totalSeconds: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export function buildBreakdownMessages(input: BreakdownInput): {
-  system: SystemBlock[];
-  messages: UserMessage[];
-} {
+export function buildBreakdownMessages(input: BreakdownInput): BreakdownMessages {
   const header = [
     `Track features:`,
     ``,
@@ -69,7 +60,7 @@ export function buildBreakdownMessages(input: BreakdownInput): {
   });
 
   return {
-    system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-    messages: [{ role: "user", content: [...header, ...sectionLines].join("\n") }],
+    system: SYSTEM_PROMPT,
+    user: [...header, ...sectionLines].join("\n"),
   };
 }
