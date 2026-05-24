@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { BreakdownInput } from "@/lib/refboi/breakdown-prompt";
 
@@ -9,8 +9,16 @@ type Status = "streaming" | "done" | "error";
 export default function Breakdown({ input }: { input: BreakdownInput }) {
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("streaming");
+  // Tracks the in-flight request so a new run (regenerate / new analysis /
+  // unmount) can abort the previous stream. Without this the old stream keeps
+  // writing its stale accumulator over the new one. Aborting the fetch also
+  // trips the route's cancel() handler, stopping token generation server-side.
+  const inFlight = useRef<AbortController | null>(null);
 
   const run = useCallback(async () => {
+    inFlight.current?.abort();
+    const ac = new AbortController();
+    inFlight.current = ac;
     setText("");
     setStatus("streaming");
     try {
@@ -18,6 +26,7 @@ export default function Breakdown({ input }: { input: BreakdownInput }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
+        signal: ac.signal,
       });
       if (!res.ok || !res.body) {
         const msg =
@@ -37,8 +46,11 @@ export default function Breakdown({ input }: { input: BreakdownInput }) {
         acc += decoder.decode(value, { stream: true });
         setText(acc);
       }
+      const trailing = decoder.decode(); // flush any split multibyte char
+      if (trailing) setText((acc += trailing));
       setStatus("done");
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setStatus("error");
       setText((t) => t || "stream interrupted");
     }
@@ -46,6 +58,7 @@ export default function Breakdown({ input }: { input: BreakdownInput }) {
 
   useEffect(() => {
     run();
+    return () => inFlight.current?.abort();
   }, [run]);
 
   return (
