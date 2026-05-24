@@ -16,6 +16,9 @@ import ResultsPanel from "./ResultsPanel";
 import TrackInfo from "./TrackInfo";
 import WaveformTimeline from "./WaveformTimeline";
 import SpectralBands from "./SpectralBands";
+import Breakdown from "./Breakdown";
+import { sectionsWithSpectra } from "@/lib/refboi/section-spectra";
+import type { BreakdownInput } from "@/lib/refboi/breakdown-prompt";
 
 type WorkspaceState =
   | { status: "idle" }
@@ -76,6 +79,17 @@ export default function RefboiWorkspace() {
     [state]
   );
 
+  const breakdownInput = useMemo<BreakdownInput | null>(() => {
+    if (state.status !== "done") return null;
+    return {
+      bpm: state.result.bpm,
+      key: state.result.key,
+      lufs: state.result.lufs,
+      durationS: state.result.durationS,
+      sections: sectionsWithSpectra(state.result.sections, state.result.features),
+    };
+  }, [state]);
+
   return (
     <div style={{ fontFamily: "monospace", padding: "2rem", maxWidth: 960 }}>
       <Link
@@ -127,6 +141,7 @@ export default function RefboiWorkspace() {
             durationS={state.result.durationS}
             sections={state.result.sections}
           />
+          {breakdownInput && <Breakdown input={breakdownInput} />}
         </>
       )}
     </div>
