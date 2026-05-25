@@ -31,7 +31,7 @@ export default function Breakdown({ input }: { input: BreakdownInput }) {
       if (!res.ok || !res.body) {
         const msg =
           res.status === 503
-            ? "breakdowns unavailable in this environment"
+            ? "local model unavailable — is Ollama running?"
             : "breakdown request failed";
         setText(msg);
         setStatus("error");
