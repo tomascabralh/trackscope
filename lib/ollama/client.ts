@@ -1,5 +1,5 @@
 const DEFAULT_HOST = "http://127.0.0.1:11434";
-const DEFAULT_MODEL = "llama3.1:8b";
+const DEFAULT_MODEL = "llama3.2:3b";
 
 /** Thrown when the local Ollama server can't be reached or rejects the request. */
 export class OllamaUnavailableError extends Error {}
