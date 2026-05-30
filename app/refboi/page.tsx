@@ -1,5 +1,5 @@
-import RefboiWorkspace from "@/components/refboi/RefboiWorkspace";
+import Workspace from "@/components/Workspace";
 
 export default function RefboiPage() {
-  return <RefboiWorkspace />;
+  return <Workspace />;
 }
