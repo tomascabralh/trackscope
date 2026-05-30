@@ -24,7 +24,7 @@ Future handoff: refboi analysis pages will deep-link to midiboi with key/BPM/gen
 - Tailwind CSS v4 + shadcn/ui
 - npm (package manager)
 - Supabase for storage (shared instance, namespaced tables per product)
-- LLM breakdown: **local Ollama** (`llama3.1:8b` default) — *not* the Anthropic API (see refboi-specific note below)
+- LLM breakdown: **local Ollama** (`llama3.2:3b` default) — *not* the Anthropic API (see refboi-specific note below)
 - Deploy: Vercel (single deployment, all products)
 
 ### refboi-specific
@@ -32,7 +32,7 @@ Future handoff: refboi analysis pages will deep-link to midiboi with key/BPM/gen
 - Essentia.js (WASM, client-side) for audio analysis
 - wavesurfer.js for waveform viz (W2+)
 - yt-dlp worker on Railway/Fly for YouTube ingestion (W4+)
-- **Breakdown LLM = local Ollama**, streamed via `lib/ollama/client.ts` (NDJSON → text deltas). Defaults: `http://127.0.0.1:11434`, model `llama3.1:8b`; override with `OLLAMA_HOST` / `OLLAMA_MODEL` (see `.env.local.example`). Requires `ollama serve` running with the model pulled. W3 swapped off the Anthropic SDK — `lib/claude/client.ts` and the `@anthropic-ai/sdk` dep are now dead and pending removal.
+- **Breakdown LLM = local Ollama**, streamed via `lib/ollama/client.ts` (NDJSON → text deltas). Defaults: `http://127.0.0.1:11434`, model `llama3.2:3b`; override with `OLLAMA_HOST` / `OLLAMA_MODEL` (see `.env.local.example`). Requires `ollama serve` running with the model pulled. W3 swapped off the Anthropic SDK — `lib/claude/client.ts` and the `@anthropic-ai/sdk` dep are now dead and pending removal.
 
 ### midiboi-specific (future)
 
@@ -109,7 +109,7 @@ If a task drifts toward any of the above, push back and remind me of the boundar
 
 ## What "done" looks like for refboi W3
 
-I can upload an audio file in Chrome and, after analysis finishes, see a "production notes" breakdown stream into the page below the spectral viz — overall summary on top, per-section commentary keyed to the detected sections. A regenerate button replays the prompt. With Ollama down the page shows a visible error (503), not a hang. (Note: first token is slower than the original ~1–3s target — local `llama3.1:8b` cold-loads on the first request.)
+I can upload an audio file in Chrome and, after analysis finishes, see a "production notes" breakdown stream into the page below the spectral viz — overall summary on top, per-section commentary keyed to the detected sections. A regenerate button replays the prompt. With Ollama down the page shows a visible error (503), not a hang. (Note: first token is slower than the original ~1–3s target — the local model cold-loads on the first request.)
 
 **W2 (done):** upload → wavesurfer timeline with section markers (intro / buildup / drop / breakdown / outro) roughly aligned to the track, plus spectral viz showing frequency balance. Readable, Chrome desktop.
 
