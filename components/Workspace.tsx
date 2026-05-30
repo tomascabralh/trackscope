@@ -44,7 +44,7 @@ const PHASE_LABELS: Record<AnalysisPhase, string> = {
   "detecting-sections": "detecting sections",
 };
 
-export default function RefboiWorkspace() {
+export default function Workspace() {
   const [state, setState] = useState<WorkspaceState>({ status: "idle" });
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function RefboiWorkspace() {
         <span>home</span>
       </Link>
 
-      <h1>refboi</h1>
+      <h1>trackscope</h1>
 
       <Uploader onFile={handleFile} />
 
