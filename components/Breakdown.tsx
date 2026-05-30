@@ -22,7 +22,7 @@ export default function Breakdown({ input }: { input: BreakdownInput }) {
     setText("");
     setStatus("streaming");
     try {
-      const res = await fetch("/api/refboi/breakdown", {
+      const res = await fetch("/api/breakdown", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
