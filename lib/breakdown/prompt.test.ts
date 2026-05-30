@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildBreakdownMessages, type BreakdownInput } from "./breakdown-prompt";
+import { buildBreakdownMessages, type BreakdownInput } from "./prompt";
 
 const input: BreakdownInput = {
   bpm: 128,

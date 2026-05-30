@@ -1,7 +1,7 @@
 import {
   buildBreakdownMessages,
   type BreakdownInput,
-} from "@/lib/refboi/breakdown-prompt";
+} from "@/lib/breakdown/prompt";
 import { streamChat, OllamaUnavailableError } from "@/lib/ollama/client";
 
 export const runtime = "nodejs";
