@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "bois",
-  description: "A family of web tools for electronic music producers.",
+  title: "trackscope",
+  description:
+    "Reference-track analyzer: BPM, key, loudness, structure, and a local-LLM production-notes breakdown.",
 };
 
 export default function RootLayout({
