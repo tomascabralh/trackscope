@@ -17,8 +17,8 @@ import TrackInfo from "./TrackInfo";
 import WaveformTimeline from "./WaveformTimeline";
 import SpectralBands from "./SpectralBands";
 import Breakdown from "./Breakdown";
-import { sectionsWithSpectra } from "@/lib/refboi/section-spectra";
-import type { BreakdownInput } from "@/lib/refboi/breakdown-prompt";
+import { sectionsWithSpectra } from "@/lib/breakdown/section-spectra";
+import type { BreakdownInput } from "@/lib/breakdown/prompt";
 
 type WorkspaceState =
   | { status: "idle" }

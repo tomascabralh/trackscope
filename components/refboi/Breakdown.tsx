@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import type { BreakdownInput } from "@/lib/refboi/breakdown-prompt";
+import type { BreakdownInput } from "@/lib/breakdown/prompt";
 
 type Status = "streaming" | "done" | "error";
 
