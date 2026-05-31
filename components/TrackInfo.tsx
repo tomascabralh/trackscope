@@ -32,14 +32,13 @@ export default function TrackInfo({
       style={{
         display: "flex",
         gap: "1rem",
-        marginBottom: "1.5rem",
-        alignItems: "flex-start",
+        alignItems: "center",
       }}
     >
       <div
         style={{
-          width: 120,
-          height: 120,
+          width: 88,
+          height: 88,
           flexShrink: 0,
           background: "#1a1a1a",
           border: "1px solid #2a2a2a",
@@ -47,7 +46,7 @@ export default function TrackInfo({
           alignItems: "center",
           justifyContent: "center",
           color: "#555",
-          fontSize: 11,
+          fontSize: 10,
           overflow: "hidden",
         }}
       >
@@ -66,7 +65,7 @@ export default function TrackInfo({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: 600,
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -75,40 +74,28 @@ export default function TrackInfo({
         >
           {title}
         </div>
-        {metadata.artist && (
-          <div style={{ color: "#aaa", fontSize: 14 }}>{metadata.artist}</div>
-        )}
-        {metadata.album && (
-          <div style={{ color: "#888", fontSize: 13 }}>{metadata.album}</div>
-        )}
+        <div style={{ color: "#999", fontSize: 12.5, marginTop: 1 }}>
+          {[metadata.artist, metadata.album].filter(Boolean).join(" · ")}
+        </div>
 
-        <table
+        <div
           style={{
-            marginTop: "0.6rem",
-            borderCollapse: "collapse",
-            fontSize: 12,
-            color: "#999",
+            display: "flex",
+            flexWrap: "wrap",
+            columnGap: "0.9rem",
+            rowGap: "0.2rem",
+            marginTop: "0.7rem",
+            fontSize: 11.5,
+            color: "#bbb",
           }}
         >
-          <tbody>
-            {facts.map(([k, v]) => (
-              <tr key={k}>
-                <td style={{ padding: "1px 12px 1px 0", color: "#666" }}>{k}</td>
-                <td
-                  style={{
-                    padding: "1px 0",
-                    maxWidth: 360,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {v}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          {facts.map(([k, v]) => (
+            <span key={k} style={{ whiteSpace: "nowrap" }}>
+              <span style={{ color: "#5a5a5a" }}>{k} </span>
+              {v}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

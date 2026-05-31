@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Section, SectionLabel } from "@/lib/audio/types";
+import SectionHeading from "./SectionHeading";
 
 interface WaveformTimelineProps {
   peaks: number[];
@@ -10,13 +11,24 @@ interface WaveformTimelineProps {
   audioUrl: string;
 }
 
+// Translucent tint painted onto the waveform itself.
 const SECTION_COLORS: Record<SectionLabel, string> = {
-  intro: "rgba(120, 120, 120, 0.25)",
-  buildup: "rgba(217, 119, 6, 0.3)",
-  drop: "rgba(220, 38, 38, 0.35)",
-  breakdown: "rgba(37, 99, 235, 0.3)",
-  verse: "rgba(22, 163, 74, 0.25)",
-  outro: "rgba(120, 120, 120, 0.25)",
+  intro: "rgba(120, 120, 120, 0.18)",
+  buildup: "rgba(245, 158, 11, 0.22)",
+  drop: "rgba(239, 68, 68, 0.26)",
+  breakdown: "rgba(59, 130, 246, 0.22)",
+  verse: "rgba(34, 197, 94, 0.16)",
+  outro: "rgba(120, 120, 120, 0.18)",
+};
+
+// Solid accent for the section-lane labels (matches the spectral legend).
+const SECTION_ACCENT: Record<SectionLabel, string> = {
+  intro: "#9a9a9a",
+  buildup: "#f59e0b",
+  drop: "#ef4444",
+  breakdown: "#3b82f6",
+  verse: "#22c55e",
+  outro: "#9a9a9a",
 };
 
 export default function WaveformTimeline({
@@ -48,7 +60,7 @@ export default function WaveformTimeline({
         url: audioUrl,
         peaks: [peaks],
         duration: durationS,
-        height: 96,
+        height: 128,
         waveColor: "#555",
         progressColor: "#bbb",
         cursorColor: "#fff",
@@ -64,7 +76,6 @@ export default function WaveformTimeline({
           start: s.start,
           end: s.end,
           color: SECTION_COLORS[s.label],
-          content: s.label,
           drag: false,
           resize: false,
         });
@@ -91,8 +102,14 @@ export default function WaveformTimeline({
     wsRef.current?.seekTo(0);
   }
 
+  function seekTo(seconds: number) {
+    wsRef.current?.setTime(seconds);
+  }
+
   return (
-    <div style={{ marginBottom: "1.5rem" }}>
+    <div>
+      <SectionHeading title="structure" />
+      <SectionLane sections={sections} durationS={durationS} onSeek={seekTo} />
       <div ref={containerRef} style={{ background: "#0a0a0a", padding: "8px" }} />
       <div
         style={{
@@ -139,6 +156,66 @@ export default function WaveformTimeline({
           click or drag the waveform to seek
         </span>
       </div>
+    </div>
+  );
+}
+
+function SectionLane({
+  sections,
+  durationS,
+  onSeek,
+}: {
+  sections: Section[];
+  durationS: number;
+  onSeek: (seconds: number) => void;
+}) {
+  if (sections.length === 0 || durationS <= 0) return null;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 2,
+        height: 22,
+        padding: "0 8px",
+        marginBottom: 6,
+      }}
+    >
+      {sections.map((s, i) => {
+        const span = Math.max(0.001, s.end - s.start);
+        const accent = SECTION_ACCENT[s.label];
+        return (
+          <button
+            key={i}
+            onClick={() => onSeek(s.start)}
+            title={`${s.label}  ${formatTime(s.start)}–${formatTime(s.end)}`}
+            style={{
+              flex: `${span} 1 0`,
+              // Floor the width so short sections (intro/outro) keep their
+              // label legible instead of clipping to "in…".
+              minWidth: `${s.label.length + 1.5}ch`,
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              padding: "0 7px",
+              border: "none",
+              borderLeft: `2px solid ${accent}`,
+              background: SECTION_COLORS[s.label],
+              color: accent,
+              fontFamily: "inherit",
+              fontSize: 11,
+              letterSpacing: "0.03em",
+              textAlign: "left",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              cursor: "pointer",
+            }}
+          >
+            {s.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
