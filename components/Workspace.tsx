@@ -16,6 +16,9 @@ import TrackInfo from "./TrackInfo";
 import WaveformTimeline from "./WaveformTimeline";
 import SpectralBands from "./SpectralBands";
 import Breakdown from "./Breakdown";
+import SectionHeading from "./SectionHeading";
+import Tabs, { type TabId } from "./Tabs";
+import AbletonPanel from "./AbletonPanel";
 import { sectionsWithSpectra } from "@/lib/breakdown/section-spectra";
 import type { BreakdownInput } from "@/lib/breakdown/prompt";
 
@@ -45,6 +48,7 @@ const PHASE_LABELS: Record<AnalysisPhase, string> = {
 
 export default function Workspace() {
   const [state, setState] = useState<WorkspaceState>({ status: "idle" });
+  const [tab, setTab] = useState<TabId>("overview");
 
   useEffect(() => {
     return () => {
@@ -90,41 +94,99 @@ export default function Workspace() {
   }, [state]);
 
   return (
-    <div style={{ fontFamily: "monospace", padding: "2rem", maxWidth: 960 }}>
-      <h1>trackscope</h1>
+    <div
+      className="mx-auto w-full"
+      style={{
+        fontFamily: "monospace",
+        padding: "2.5rem clamp(1.25rem, 4vw, 3rem) 5rem",
+        maxWidth: 1680,
+      }}
+    >
+      <h1
+        style={{
+          fontSize: 13,
+          fontWeight: 400,
+          letterSpacing: "0.14em",
+          margin: "0 0 2rem",
+          color: "#cfcfcf",
+        }}
+      >
+        trackscope
+        <span style={{ color: "#555" }}> · reference-track analyzer</span>
+      </h1>
 
-      <Uploader onFile={handleFile} />
+      <Uploader onFile={handleFile} compact={state.status === "done"} />
 
       {state.status === "analyzing" && <Loader progress={state.progress} />}
 
-      {state.status === "error" && <p style={{ color: "red" }}>{state.message}</p>}
+      {state.status === "error" && (
+        <p style={{ color: "#c97676", marginTop: "1.5rem" }}>{state.message}</p>
+      )}
 
       {state.status === "done" && (
-        <>
-          <TrackInfo
-            metadata={state.metadata}
-            durationS={state.result.durationS}
-            originalSampleRate={state.result.originalSampleRate}
-            originalChannels={state.result.originalChannels}
-          />
-          <ResultsPanel
-            bpm={state.result.bpm}
-            musicalKey={state.result.key}
-            lufs={state.result.lufs}
-          />
-          <WaveformTimeline
-            peaks={state.peaks}
-            durationS={state.result.durationS}
-            sections={state.result.sections}
-            audioUrl={state.audioUrl}
-          />
-          <SpectralBands
-            series={series}
-            durationS={state.result.durationS}
-            sections={state.result.sections}
-          />
-          {breakdownInput && <Breakdown input={breakdownInput} />}
-        </>
+        <div style={{ marginTop: "1.75rem" }}>
+          <Tabs active={tab} onChange={setTab} />
+
+          <div style={{ marginTop: "1.75rem" }}>
+            {tab === "overview" && (
+              <div className="flex flex-col gap-8">
+                <div>
+                  <SectionHeading title="track" />
+                  <div
+                    className="flex flex-col sm:flex-row sm:items-stretch"
+                    style={{ border: "1px solid #1c1c1c", background: "#0c0c0c" }}
+                  >
+                    <div className="min-w-0 flex-1" style={{ padding: "1.1rem 1.3rem" }}>
+                      <TrackInfo
+                        metadata={state.metadata}
+                        durationS={state.result.durationS}
+                        originalSampleRate={state.result.originalSampleRate}
+                        originalChannels={state.result.originalChannels}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "1.1rem 1.5rem",
+                        borderLeft: "1px solid #1c1c1c",
+                      }}
+                    >
+                      <ResultsPanel
+                        bpm={state.result.bpm}
+                        musicalKey={state.result.key}
+                        lufs={state.result.lufs}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <WaveformTimeline
+                  peaks={state.peaks}
+                  durationS={state.result.durationS}
+                  sections={state.result.sections}
+                  audioUrl={state.audioUrl}
+                />
+              </div>
+            )}
+
+            {tab === "spectral" && (
+              <SpectralBands
+                series={series}
+                durationS={state.result.durationS}
+                sections={state.result.sections}
+              />
+            )}
+
+            {tab === "ableton" && <AbletonPanel />}
+
+            {/* Kept mounted so the breakdown keeps streaming in the background
+                while other tabs are open; only its visibility toggles. */}
+            <div style={{ display: tab === "notes" ? "block" : "none" }}>
+              {breakdownInput && <Breakdown input={breakdownInput} />}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

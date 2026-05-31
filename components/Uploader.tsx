@@ -4,9 +4,10 @@ import { useRef } from "react";
 
 interface UploaderProps {
   onFile: (file: File) => void;
+  compact?: boolean;
 }
 
-export default function Uploader({ onFile }: UploaderProps) {
+export default function Uploader({ onFile, compact = false }: UploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -26,14 +27,19 @@ export default function Uploader({ onFile }: UploaderProps) {
       onDragOver={(e) => e.preventDefault()}
       onClick={() => inputRef.current?.click()}
       style={{
-        border: "2px dashed #888",
-        padding: "2rem",
+        border: `1px dashed ${compact ? "#333" : "#666"}`,
+        padding: compact ? "0.85rem 1.25rem" : "3rem 2rem",
         cursor: "pointer",
         textAlign: "center",
-        marginBottom: "1.5rem",
+        color: compact ? "#666" : "#999",
+        fontSize: compact ? 12 : 14,
+        letterSpacing: compact ? "0.04em" : "normal",
+        transition: "border-color 120ms, color 120ms",
       }}
     >
-      drop mp3 / wav here, or click to browse
+      {compact
+        ? "drop another track, or click to browse"
+        : "drop mp3 / wav here, or click to browse"}
       <input
         ref={inputRef}
         type="file"
