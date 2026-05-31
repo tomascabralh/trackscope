@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { analyzeAudio } from "@/lib/audio/analyze";
 import { parseTrackMetadata } from "@/lib/audio/metadata";
@@ -16,6 +15,9 @@ import ResultsPanel from "./ResultsPanel";
 import TrackInfo from "./TrackInfo";
 import WaveformTimeline from "./WaveformTimeline";
 import SpectralBands from "./SpectralBands";
+import Breakdown from "./Breakdown";
+import { sectionsWithSpectra } from "@/lib/breakdown/section-spectra";
+import type { BreakdownInput } from "@/lib/breakdown/prompt";
 
 type WorkspaceState =
   | { status: "idle" }
@@ -41,7 +43,7 @@ const PHASE_LABELS: Record<AnalysisPhase, string> = {
   "detecting-sections": "detecting sections",
 };
 
-export default function RefboiWorkspace() {
+export default function Workspace() {
   const [state, setState] = useState<WorkspaceState>({ status: "idle" });
 
   useEffect(() => {
@@ -76,26 +78,20 @@ export default function RefboiWorkspace() {
     [state]
   );
 
+  const breakdownInput = useMemo<BreakdownInput | null>(() => {
+    if (state.status !== "done") return null;
+    return {
+      bpm: state.result.bpm,
+      key: state.result.key,
+      lufs: state.result.lufs,
+      durationS: state.result.durationS,
+      sections: sectionsWithSpectra(state.result.sections, state.result.features),
+    };
+  }, [state]);
+
   return (
     <div style={{ fontFamily: "monospace", padding: "2rem", maxWidth: 960 }}>
-      <Link
-        href="/"
-        aria-label="back to home"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "0.4rem",
-          color: "#888",
-          textDecoration: "none",
-          fontSize: 13,
-          marginBottom: "0.5rem",
-        }}
-      >
-        <span aria-hidden="true">←</span>
-        <span>home</span>
-      </Link>
-
-      <h1>refboi</h1>
+      <h1>trackscope</h1>
 
       <Uploader onFile={handleFile} />
 
@@ -127,6 +123,7 @@ export default function RefboiWorkspace() {
             durationS={state.result.durationS}
             sections={state.result.sections}
           />
+          {breakdownInput && <Breakdown input={breakdownInput} />}
         </>
       )}
     </div>
