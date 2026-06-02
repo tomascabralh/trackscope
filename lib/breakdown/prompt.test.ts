@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildBreakdownMessages, type BreakdownInput } from "./prompt";
+import { describeLoudness } from "./descriptors";
 import { fixtures } from "./__fixtures__";
 
 const mmss = (s: number) =>
@@ -50,7 +51,12 @@ describe("buildBreakdownMessages — fixture contract", () => {
         const { user } = buildBreakdownMessages(input);
         expect(user).toContain(String(input.bpm));
         expect(user).toContain(input.key);
-        expect(user).toContain(String(input.lufs));
+        expect(user).toContain(describeLoudness(input.lufs));
+      });
+
+      it("leaks no raw dB/dBFS/LUFS numbers into the prompt", () => {
+        const { user } = buildBreakdownMessages(input);
+        expect(user).not.toMatch(/-?\d+(\.\d+)?\s?(dbfs|db|lufs)/i);
       });
 
       it("renders one mm:ss-keyed line per section, in order", () => {
