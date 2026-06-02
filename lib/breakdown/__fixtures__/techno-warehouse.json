@@ -1,0 +1,13 @@
+{
+  "bpm": 134,
+  "key": "G minor",
+  "lufs": -8.0,
+  "durationS": 426,
+  "sections": [
+    { "label": "intro", "startS": 0, "endS": 48, "bandsDb": { "sub": -16, "low": -10, "mid": -17, "highMid": -19, "high": -22 } },
+    { "label": "drop", "startS": 48, "endS": 168, "bandsDb": { "sub": -6, "low": -5, "mid": -11, "highMid": -12, "high": -14 } },
+    { "label": "breakdown", "startS": 168, "endS": 232, "bandsDb": { "sub": -24, "low": -15, "mid": -12, "highMid": -11, "high": -13 } },
+    { "label": "drop", "startS": 232, "endS": 384, "bandsDb": { "sub": -5, "low": -4, "mid": -10, "highMid": -11, "high": -13 } },
+    { "label": "outro", "startS": 384, "endS": 426, "bandsDb": { "sub": -18, "low": -12, "mid": -16, "highMid": -18, "high": -20 } }
+  ]
+}

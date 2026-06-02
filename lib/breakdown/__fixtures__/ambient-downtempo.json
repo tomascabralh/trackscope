@@ -1,0 +1,13 @@
+{
+  "bpm": 90,
+  "key": "C major",
+  "lufs": -16.4,
+  "durationS": 408,
+  "sections": [
+    { "label": "intro", "startS": 0, "endS": 72, "bandsDb": { "sub": -42, "low": -30, "mid": -20, "highMid": -16, "high": -18 } },
+    { "label": "verse", "startS": 72, "endS": 180, "bandsDb": { "sub": -34, "low": -24, "mid": -16, "highMid": -13, "high": -15 } },
+    { "label": "breakdown", "startS": 180, "endS": 252, "bandsDb": { "sub": -38, "low": -27, "mid": -18, "highMid": -14, "high": -16 } },
+    { "label": "verse", "startS": 252, "endS": 360, "bandsDb": { "sub": -32, "low": -22, "mid": -15, "highMid": -12, "high": -14 } },
+    { "label": "outro", "startS": 360, "endS": 408, "bandsDb": { "sub": -40, "low": -29, "mid": -21, "highMid": -18, "high": -20 } }
+  ]
+}
