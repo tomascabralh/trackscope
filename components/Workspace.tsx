@@ -178,7 +178,9 @@ export default function Workspace() {
               />
             )}
 
-            {tab === "ableton" && <AbletonPanel />}
+            {tab === "ableton" && breakdownInput && (
+              <AbletonPanel input={breakdownInput} />
+            )}
 
             {/* Kept mounted so the breakdown keeps streaming in the background
                 while other tabs are open; only its visibility toggles. */}
