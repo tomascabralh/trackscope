@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import SectionHeading from "./SectionHeading";
-import { buildAbletonPrompt } from "@/lib/bridge/build-prompt";
+import { buildOfflinePrompt } from "@/lib/bridge/facts";
 import type { BreakdownInput } from "@/lib/breakdown/prompt";
 
 const MONO = "var(--font-geist-mono), monospace";
 const SANS = "var(--font-geist-sans), system-ui, sans-serif";
 
 export default function AbletonPanel({ input }: { input: BreakdownInput }) {
-  const prompt = buildAbletonPrompt(input);
+  const prompt = buildOfflinePrompt(input);
   const [copied, setCopied] = useState(false);
 
   async function copy() {
