@@ -15,6 +15,8 @@ export default function AbletonPanel({ input }: { input: AbletonBridgeInput }) {
   const [copied, setCopied] = useState(false);
   const inFlight = useRef<AbortController | null>(null);
 
+  // `run` is keyed on `input`, so the caller must pass a memo-stable object
+  // (Workspace does, via useMemo) — an inline object would refetch every render.
   const run = useCallback(async () => {
     inFlight.current?.abort();
     const ac = new AbortController();
