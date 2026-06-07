@@ -6,7 +6,6 @@ import { sectionRoles, type Role } from "./roles";
 export interface BridgeMeta {
   title?: string;
   artist?: string;
-  album?: string;
   genre?: string;
   year?: number;
 }

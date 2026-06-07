@@ -24,8 +24,22 @@ describe("renderFacts", () => {
       it("leaks no raw dB/LUFS numbers", () => {
         expect(facts).not.toMatch(/-?\d+(\.\d+)?\s?(dbfs|db|lufs)/i);
       });
+
+      it("anchors pitched tracks to the key's root note", () => {
+        const root = input.key.split(" ")[0];
+        const line = facts.split("\n").find((l) => l.startsWith("Root-note anchors"));
+        expect(line).toBeDefined();
+        expect(line).toMatch(new RegExp(`${root.replace("#", "\\#")}\\d`));
+      });
     });
   }
+
+  it("renders root-note anchors with per-role octaves (house, A minor)", () => {
+    const house = fixtures.find((f) => f.id === "house-peaktime")!.input;
+    expect(renderFacts(house)).toContain(
+      "Root-note anchors (key A minor): Sub A1, Bass A2, Lead A3, Pad A3"
+    );
+  });
 
   it("renders an untitled reference when no metadata is present", () => {
     const f = fixtures[0].input as AbletonBridgeInput;
@@ -41,10 +55,14 @@ describe("renderFacts", () => {
     expect(facts).toContain("Reference: Nightcall — Kavinsky, synthwave, 2010");
   });
 
-  it("buildOfflinePrompt wraps the facts with ableton-mcp actions", () => {
-    const p = buildOfflinePrompt(fixtures[0].input);
-    expect(p).toContain("ableton-mcp");
-    expect(p).toContain(renderFacts(fixtures[0].input));
-    expect(p.toLowerCase()).toContain("batch the operations");
+  it("buildOfflinePrompt frames the facts with an intro and a closing action", () => {
+    const input = fixtures[0].input;
+    const p = buildOfflinePrompt(input);
+    const facts = renderFacts(input);
+    expect(p).toContain("You are building a starting-point Ableton Live project");
+    expect(p).toContain("ableton-mcp tools");
+    expect(p).toContain(facts);
+    expect(p.indexOf("You are building")).toBeLessThan(p.indexOf(facts));
+    expect(p.trimEnd().endsWith("batch the operations.")).toBe(true);
   });
 });
