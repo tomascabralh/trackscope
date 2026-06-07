@@ -62,9 +62,12 @@ No barrel exports. Path alias `@/*` → repo root.
 - Per-section spectral averaging + prompt-building: `lib/breakdown/`
   (`section-spectra.ts`, `prompt.ts`). **The system prompt is the IP** and is
   still being iterated on.
-- Ableton bridge: `lib/bridge/` turns the same `BreakdownInput` into a
-  copy-paste prompt for an Ableton-driving Claude (bars + roles + prompt).
-  Rendered by `<AbletonPanel />`; no dependency on the Ollama breakdown.
+- Ableton bridge: `lib/bridge/` turns the analysis (+ ID3 metadata) into a
+  copy-paste prompt for an Ableton-driving Claude. `facts.ts` renders the
+  deterministic facts (bars + roles + per-section spectra); `prompt.ts` wraps
+  them in the build-prompt system prompt (a second IP); `app/api/ableton-build`
+  streams it from Ollama. `<AbletonPanel />` streams the result and falls back to
+  the deterministic scaffold (`buildOfflinePrompt`) when Ollama is down.
 - `<Breakdown />` auto-runs on analysis `done`, streams markdown, has a
   regenerate button.
 

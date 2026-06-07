@@ -21,6 +21,7 @@ import Tabs, { type TabId } from "./Tabs";
 import AbletonPanel from "./AbletonPanel";
 import { sectionsWithSpectra } from "@/lib/breakdown/section-spectra";
 import type { BreakdownInput } from "@/lib/breakdown/prompt";
+import type { AbletonBridgeInput } from "@/lib/bridge/facts";
 
 type WorkspaceState =
   | { status: "idle" }
@@ -92,6 +93,15 @@ export default function Workspace() {
       sections: sectionsWithSpectra(state.result.sections, state.result.features),
     };
   }, [state]);
+
+  const abletonInput = useMemo<AbletonBridgeInput | null>(() => {
+    if (state.status !== "done" || !breakdownInput) return null;
+    const m = state.metadata;
+    return {
+      ...breakdownInput,
+      meta: { title: m.title, artist: m.artist, genre: m.genre, year: m.year },
+    };
+  }, [state, breakdownInput]);
 
   return (
     <div
@@ -178,9 +188,7 @@ export default function Workspace() {
               />
             )}
 
-            {tab === "ableton" && breakdownInput && (
-              <AbletonPanel input={breakdownInput} />
-            )}
+            {tab === "ableton" && abletonInput && <AbletonPanel input={abletonInput} />}
 
             {/* Kept mounted so the breakdown keeps streaming in the background
                 while other tabs are open; only its visibility toggles. */}
