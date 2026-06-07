@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { buildBreakdownMessages, type BreakdownInput } from "./prompt";
+import { describeLoudness } from "./descriptors";
+import { fixtures } from "./__fixtures__";
+
+const mmss = (s: number) =>
+  `${Math.floor(Math.round(s) / 60)}:${String(Math.round(s) % 60).padStart(2, "0")}`;
 
 const input: BreakdownInput = {
   bpm: 128,
@@ -27,4 +32,44 @@ describe("buildBreakdownMessages", () => {
     expect(user).toContain("0:18–1:20"); // drop range (en-dash)
     expect(user).toMatch(/drop/i);
   });
+});
+
+describe("buildBreakdownMessages — fixture contract", () => {
+  it("has fixtures spanning distinct profiles", () => {
+    expect(fixtures.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(fixtures.map((f) => f.id)).size).toBe(fixtures.length);
+  });
+
+  for (const { id, input } of fixtures) {
+    describe(id, () => {
+      it("keeps the ## Overall instruction in the system prompt", () => {
+        const { system } = buildBreakdownMessages(input);
+        expect(system.toLowerCase()).toContain("## overall");
+      });
+
+      it("renders the track-feature facts", () => {
+        const { user } = buildBreakdownMessages(input);
+        expect(user).toContain(String(input.bpm));
+        expect(user).toContain(input.key);
+        expect(user).toContain(describeLoudness(input.lufs));
+      });
+
+      it("leaks no raw dB/dBFS/LUFS numbers into the prompt", () => {
+        const { user } = buildBreakdownMessages(input);
+        expect(user).not.toMatch(/-?\d+(\.\d+)?\s?(dbfs|db|lufs)/i);
+      });
+
+      it("renders one mm:ss-keyed line per section, in order", () => {
+        const { user } = buildBreakdownMessages(input);
+        let cursor = -1;
+        for (const s of input.sections) {
+          const range = `${mmss(s.startS)}–${mmss(s.endS)}`;
+          const at = user.indexOf(range, cursor + 1);
+          expect(at, `section ${s.label} ${range} missing or out of order`).toBeGreaterThan(cursor);
+          expect(user).toContain(`**${s.label}** (${range})`);
+          cursor = at;
+        }
+      });
+    });
+  }
 });

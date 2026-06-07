@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildAbletonPrompt > matches the golden house-peaktime prompt 1`] = `
+"You are building a starting-point Ableton Live project from a reference track
+analyzed by trackscope. Use the connected ableton-mcp tools.
+
+Reference: club-tempo, A minor. Energy runs sparse -> low -> high -> sparse -> peak -> sparse.
+Tempo: 126 BPM   Key: A minor
+
+Arrangement (build in this order, 4/4):
+1. Intro - bars 1–16 - Lead, Pad, Perc
+2. Buildup - bars 17–32 - Lead, Pad
+3. Drop - bars 33–84 - Kick, Sub, Bass
+4. Breakdown - bars 85–108 - Lead, Pad
+5. Drop - bars 109–168 - Kick, Sub, Bass
+6. Outro - bars 169–196 - Bass, Lead
+
+Placeholder MIDI (one sustained root note per pitched track, key = A minor):
+- Sub: A1
+- Bass: A2
+- Lead: A3
+- Pad: A3
+
+Set the tempo, create the tracks named above, lay out the arrangement sections at
+the bar positions, and add a sustained root-note clip per pitched track spanning its
+section. Batch the operations."
+`;

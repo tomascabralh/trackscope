@@ -47,6 +47,7 @@ components/              # all UI lives here (flat, no subfolders)
 lib/
   audio/                # Essentia wrappers, decoding, sections, spectral
   breakdown/            # per-section spectral averaging + prompt-building (the IP)
+  bridge/               # analysis → copy-paste Ableton build-prompt
   ollama/               # local Ollama chat client, NDJSON streaming
 ```
 
@@ -61,6 +62,9 @@ No barrel exports. Path alias `@/*` → repo root.
 - Per-section spectral averaging + prompt-building: `lib/breakdown/`
   (`section-spectra.ts`, `prompt.ts`). **The system prompt is the IP** and is
   still being iterated on.
+- Ableton bridge: `lib/bridge/` turns the same `BreakdownInput` into a
+  copy-paste prompt for an Ableton-driving Claude (bars + roles + prompt).
+  Rendered by `<AbletonPanel />`; no dependency on the Ollama breakdown.
 - `<Breakdown />` auto-runs on analysis `done`, streams markdown, has a
   regenerate button.
 
