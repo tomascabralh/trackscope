@@ -8,7 +8,7 @@ const TABS: { id: TabId; label: string; wip?: boolean }[] = [
   { id: "overview", label: "overview" },
   { id: "spectral", label: "spectral bands" },
   { id: "notes", label: "production notes (AI)" },
-  { id: "ableton", label: "ableton-mcp", wip: true },
+  { id: "ableton", label: "ableton-mcp-extended" },
 ];
 
 interface TabsProps {
