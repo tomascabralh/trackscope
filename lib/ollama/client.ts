@@ -9,6 +9,8 @@ interface StreamChatOpts {
   user: string;
   model?: string;
   signal?: AbortSignal;
+  /** Max tokens to generate. Defaults to 1500; raise for longer outputs. */
+  numPredict?: number;
 }
 
 /**
@@ -33,7 +35,7 @@ export async function streamChat(opts: StreamChatOpts): Promise<AsyncIterable<st
           { role: "user", content: opts.user },
         ],
         stream: true,
-        options: { temperature: 0.7, num_predict: 1500 },
+        options: { temperature: 0.7, num_predict: opts.numPredict ?? 1500 },
       }),
       signal: opts.signal,
     });

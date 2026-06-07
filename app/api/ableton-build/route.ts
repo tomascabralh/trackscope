@@ -31,7 +31,9 @@ export async function POST(req: Request) {
 
   let deltas: AsyncIterable<string>;
   try {
-    deltas = await streamChat({ system, user, signal: ac.signal });
+    // The build-prompt (per-section devices + mix moves + MIDI + actions) runs
+    // longer than a breakdown, so give it more headroom than the 1500 default.
+    deltas = await streamChat({ system, user, signal: ac.signal, numPredict: 3072 });
   } catch (err) {
     if (err instanceof OllamaUnavailableError) {
       return Response.json({ error: "local model unavailable" }, { status: 503 });
