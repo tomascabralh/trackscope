@@ -3,6 +3,7 @@ import {
   type BreakdownInput,
 } from "@/lib/breakdown/prompt";
 import { streamChat, OllamaUnavailableError } from "@/lib/ollama/client";
+import { isDemoMode } from "@/lib/demo";
 
 export const runtime = "nodejs";
 
@@ -19,6 +20,13 @@ function isValid(body: unknown): body is BreakdownInput {
 }
 
 export async function POST(req: Request) {
+  if (isDemoMode()) {
+    return Response.json(
+      { error: "breakdown is disabled on the hosted demo" },
+      { status: 503 },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

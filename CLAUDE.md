@@ -28,7 +28,10 @@ system prompt (the IP) for breakdown quality.
   (NDJSON → text deltas). Defaults: `http://127.0.0.1:11434`, model
   `llama3.2:3b`; override with `OLLAMA_HOST` / `OLLAMA_MODEL` (see
   `.env.local.example`). Requires `ollama serve` running with the model pulled.
-- Package manager: `npm`. Deploy target: not hosted yet (run locally).
+- Package manager: `npm`. Deploy target: Vercel as a portfolio demo with
+  `NEXT_PUBLIC_DEMO_MODE=1` (`lib/demo.ts`) — analysis still runs client-side,
+  but the Ollama breakdown is gated off with a "run it locally" notice. The
+  full experience still means running locally with Ollama.
 
 ## Repo structure
 
@@ -91,7 +94,7 @@ No barrel exports. Path alias `@/*` → repo root.
 ## Out of scope (deferred)
 
 YouTube ingestion, persistence / shareable permalinks, rate-limiting, a hosted
-deploy, stem separation, auth/payments, mobile polish. No behavior changes
+LLM for the breakdown, stem separation, auth/payments, mobile polish. No behavior changes
 should sneak in under "rename/refactor" work.
 
 ## North star
