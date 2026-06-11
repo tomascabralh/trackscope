@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { BreakdownInput } from "@/lib/breakdown/prompt";
+import { isDemoMode, REPO_URL } from "@/lib/demo";
 import SectionHeading from "./SectionHeading";
 
 type Status = "streaming" | "done" | "error";
@@ -151,7 +152,35 @@ function NoteCard({ section, featured }: { section: NoteSection; featured?: bool
   );
 }
 
+function DemoNotice() {
+  return (
+    <section>
+      <SectionHeading title="production notes" />
+      <p style={{ color: "#888", fontSize: 13.5, fontFamily: MONO, lineHeight: 1.62 }}>
+        the production notes are written by a local Ollama model and are off in
+        this hosted demo — everything above ran in your browser.{" "}
+        <a
+          href={REPO_URL}
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: "#c9c9c9", textDecoration: "underline" }}
+        >
+          clone the repo
+        </a>{" "}
+        and run it locally for the full write-up.
+      </p>
+    </section>
+  );
+}
+
 export default function Breakdown({ input }: { input: BreakdownInput }) {
+  // Constant for the lifetime of the bundle, so the conditional mount below
+  // never flips between renders.
+  if (isDemoMode()) return <DemoNotice />;
+  return <LiveBreakdown input={input} />;
+}
+
+function LiveBreakdown({ input }: { input: BreakdownInput }) {
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("streaming");
   // Tracks the in-flight request so a new run (regenerate / new analysis /
