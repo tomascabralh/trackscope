@@ -21,6 +21,7 @@ import {
   parseJudgeResponse,
   type JudgeResult,
 } from "../lib/breakdown/judge";
+import { summarizeRuns, type RunSummary } from "../lib/breakdown/eval-stats";
 import { streamChat, OllamaUnavailableError } from "../lib/ollama/client";
 
 const JUDGE_MODEL = process.env.OLLAMA_JUDGE_MODEL ?? process.env.OLLAMA_MODEL ?? "llama3.2:3b";
@@ -35,7 +36,8 @@ function parseArgs(argv: string[]) {
     .map((m) => m.trim())
     .filter(Boolean);
   const fixtureId = get("--fixture");
-  return { models, fixtureId };
+  const runs = Math.max(1, Number(get("--runs") ?? 1) || 1);
+  return { models, fixtureId, runs };
 }
 
 async function collect(stream: AsyncIterable<string>): Promise<string> {
@@ -109,6 +111,19 @@ function renderJudge(judge: JudgeResult | undefined): string {
   return [head, "", "soft violations:", ...lines].join("\n");
 }
 
+function renderSummary(summary: RunSummary): string {
+  const { runs, parsedJudges, meanHardViolations, meanOverall, meanAxes, meanSoftViolations } =
+    summary;
+  if (meanOverall === null || meanAxes === null) {
+    return `**avg over ${runs} run(s): hard ${meanHardViolations} — judge unparsed in all runs**`;
+  }
+  return (
+    `**avg over ${runs} run(s): overall ${meanOverall}/10** ` +
+    `(specificity ${meanAxes.specificity}, usefulness ${meanAxes.usefulness}, voice ${meanAxes.voice}) ` +
+    `— hard ${meanHardViolations}, soft ${meanSoftViolations}, judged ${parsedJudges}/${runs}`
+  );
+}
+
 function renderInputTable(f: BreakdownFixture): string {
   const { input } = f;
   const head = `**${input.bpm} BPM · ${input.key} · ${input.lufs} LUFS · ${input.sections.length} sections**`;
@@ -119,15 +134,15 @@ function renderInputTable(f: BreakdownFixture): string {
 }
 
 async function main() {
-  const { models, fixtureId } = parseArgs(process.argv.slice(2));
+  const { models, fixtureId, runs } = parseArgs(process.argv.slice(2));
   const selected = fixtureId ? fixtures.filter((f) => f.id === fixtureId) : fixtures;
   if (selected.length === 0) {
     console.error(`No fixture matched "${fixtureId}". Available: ${fixtures.map((f) => f.id).join(", ")}`);
     process.exit(1);
   }
 
-  console.log(`Models: ${models.join(", ")}`);
-  console.log(`Fixtures: ${selected.map((f) => f.id).join(", ")}\n`);
+  console.log(`Models: ${models.join(", ")}  (judge: ${JUDGE_MODEL})`);
+  console.log(`Fixtures: ${selected.map((f) => f.id).join(", ")}  ×${runs} run(s)\n`);
 
   console.log("Warming models…");
   for (const model of models) await warm(model);
@@ -136,35 +151,67 @@ async function main() {
   const parts: string[] = [
     `# Breakdown eval — ${stamp}`,
     ``,
-    `Models: ${models.map((m) => `\`${m}\``).join(", ")}`,
+    `Models: ${models.map((m) => `\`${m}\``).join(", ")} · judge \`${JUDGE_MODEL}\` · ${runs} run(s)/fixture`,
     ``,
   ];
+
+  // Headline the loop optimizes: mean judge overall across every fixture.
+  const fixtureOveralls: number[] = [];
 
   for (const fixture of selected) {
     console.log(`\n=== ${fixture.id} ===`);
     parts.push(`## ${fixture.id}`, ``, renderInputTable(fixture), ``);
     for (const model of models) {
-      process.stdout.write(`  ${model}… `);
-      const { text, ms, violations, judge, error } = await runOne(fixture, model);
-      const judgeTag = judge?.ok ? `, judge ${judge.score.overall}/10` : "";
-      const tag = error
-        ? `error (${(ms / 1000).toFixed(1)}s)`
-        : `${(ms / 1000).toFixed(1)}s — ${violations.length} violation(s)${judgeTag}`;
-      console.log(tag);
-      parts.push(`### \`${model}\` — ${(ms / 1000).toFixed(1)}s`, ``);
-      if (error) {
-        parts.push(`> **${error}**`, ``);
-      } else {
-        parts.push(renderViolations(violations), ``, renderJudge(judge), ``, text.trim(), ``);
+      process.stdout.write(`  ${model} ×${runs}… `);
+      const results: RunResult[] = [];
+      for (let i = 0; i < runs; i++) results.push(await runOne(fixture, model));
+      const good = results.filter((r) => !r.error);
+
+      parts.push(`### \`${model}\` — ${runs} run(s)`, ``);
+      if (good.length === 0) {
+        console.log(`error (${results[0].error})`);
+        parts.push(`> **${results[0].error}**`, ``);
+        continue;
       }
+
+      const summary = summarizeRuns(
+        good.map((r) => ({ hardViolations: r.violations.length, judge: r.judge }))
+      );
+      if (summary.meanOverall !== null) fixtureOveralls.push(summary.meanOverall);
+      const overallTag = summary.meanOverall !== null ? `, overall ${summary.meanOverall}/10` : "";
+      console.log(`${good.length}/${runs} ok — hard ${summary.meanHardViolations}${overallTag}`);
+
+      const rep = good[good.length - 1];
+      parts.push(
+        renderSummary(summary),
+        ``,
+        `<details><summary>representative run</summary>`,
+        ``,
+        renderViolations(rep.violations),
+        ``,
+        renderJudge(rep.judge),
+        ``,
+        rep.text.trim(),
+        ``,
+        `</details>`,
+        ``
+      );
     }
   }
+
+  const grand =
+    fixtureOveralls.length > 0
+      ? Math.round((fixtureOveralls.reduce((a, b) => a + b, 0) / fixtureOveralls.length) * 10) / 10
+      : null;
+  const headline = grand === null ? "no judged runs" : `mean overall across fixtures: ${grand}/10`;
+  console.log(`\n${headline}`);
+  parts.splice(4, 0, `**${headline}**`, ``);
 
   const outDir = resolve(process.cwd(), "eval-out");
   await mkdir(outDir, { recursive: true });
   const outPath = resolve(outDir, `${stamp}.md`);
   await writeFile(outPath, parts.join("\n"), "utf8");
-  console.log(`\nWrote ${outPath}`);
+  console.log(`Wrote ${outPath}`);
 }
 
 main().catch((err) => {
