@@ -16,7 +16,14 @@ import { resolve } from "node:path";
 import { fixtures, type BreakdownFixture } from "../lib/breakdown/__fixtures__";
 import { buildBreakdownMessages } from "../lib/breakdown/prompt";
 import { scoreBreakdown, type Violation } from "../lib/breakdown/score";
+import {
+  buildJudgeMessages,
+  parseJudgeResponse,
+  type JudgeResult,
+} from "../lib/breakdown/judge";
 import { streamChat, OllamaUnavailableError } from "../lib/ollama/client";
+
+const JUDGE_MODEL = process.env.OLLAMA_JUDGE_MODEL ?? process.env.OLLAMA_MODEL ?? "llama3.2:3b";
 
 function parseArgs(argv: string[]) {
   const get = (flag: string) => {
@@ -50,7 +57,20 @@ interface RunResult {
   text: string;
   ms: number;
   violations: Violation[];
+  judge?: JudgeResult;
   error?: string;
+}
+
+/** Ask the judge model to grade a finished breakdown. Best-effort: any failure
+ *  degrades to an unparsed result rather than aborting the eval. */
+async function judgeOne(fixture: BreakdownFixture, breakdown: string): Promise<JudgeResult> {
+  const { system, user } = buildJudgeMessages(fixture.input, breakdown);
+  try {
+    const raw = await collect(await streamChat({ model: JUDGE_MODEL, system, user }));
+    return parseJudgeResponse(raw);
+  } catch (err) {
+    return { ok: false, raw: err instanceof Error ? err.message : String(err) };
+  }
 }
 
 async function runOne(fixture: BreakdownFixture, model: string): Promise<RunResult> {
@@ -58,8 +78,10 @@ async function runOne(fixture: BreakdownFixture, model: string): Promise<RunResu
   const started = performance.now();
   try {
     const text = await collect(await streamChat({ model, system, user }));
+    const ms = performance.now() - started;
     const { violations } = scoreBreakdown(text, fixture.input);
-    return { text, ms: performance.now() - started, violations };
+    const judge = await judgeOne(fixture, text);
+    return { text, ms, violations, judge };
   } catch (err) {
     const error =
       err instanceof OllamaUnavailableError
@@ -72,9 +94,19 @@ async function runOne(fixture: BreakdownFixture, model: string): Promise<RunResu
 }
 
 function renderViolations(violations: Violation[]): string {
-  if (violations.length === 0) return "**score: clean — 0 violations**";
+  if (violations.length === 0) return "**hard rules: clean — 0 violations**";
   const lines = violations.map((v) => `> - \`${v.rule}\` — ${v.detail}`);
-  return [`**score: ${violations.length} violation(s)**`, "", ...lines].join("\n");
+  return [`**hard rules: ${violations.length} violation(s)**`, "", ...lines].join("\n");
+}
+
+function renderJudge(judge: JudgeResult | undefined): string {
+  if (!judge) return "";
+  if (!judge.ok) return `**judge: unparsed** — \`${judge.raw.slice(0, 120)}\``;
+  const s = judge.score;
+  const head = `**judge: ${s.overall}/10** (specificity ${s.specificity}, usefulness ${s.usefulness}, voice ${s.voice}) — ${s.notes}`;
+  if (s.softViolations.length === 0) return head;
+  const lines = s.softViolations.map((v) => `> - ${v}`);
+  return [head, "", "soft violations:", ...lines].join("\n");
 }
 
 function renderInputTable(f: BreakdownFixture): string {
@@ -113,16 +145,17 @@ async function main() {
     parts.push(`## ${fixture.id}`, ``, renderInputTable(fixture), ``);
     for (const model of models) {
       process.stdout.write(`  ${model}… `);
-      const { text, ms, violations, error } = await runOne(fixture, model);
+      const { text, ms, violations, judge, error } = await runOne(fixture, model);
+      const judgeTag = judge?.ok ? `, judge ${judge.score.overall}/10` : "";
       const tag = error
         ? `error (${(ms / 1000).toFixed(1)}s)`
-        : `${(ms / 1000).toFixed(1)}s — ${violations.length} violation(s)`;
+        : `${(ms / 1000).toFixed(1)}s — ${violations.length} violation(s)${judgeTag}`;
       console.log(tag);
       parts.push(`### \`${model}\` — ${(ms / 1000).toFixed(1)}s`, ``);
       if (error) {
         parts.push(`> **${error}**`, ``);
       } else {
-        parts.push(renderViolations(violations), ``, text.trim(), ``);
+        parts.push(renderViolations(violations), ``, renderJudge(judge), ``, text.trim(), ``);
       }
     }
   }
