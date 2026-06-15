@@ -15,6 +15,7 @@ import { resolve } from "node:path";
 
 import { fixtures, type BreakdownFixture } from "../lib/breakdown/__fixtures__";
 import { buildBreakdownMessages } from "../lib/breakdown/prompt";
+import { scoreBreakdown, type Violation } from "../lib/breakdown/score";
 import { streamChat, OllamaUnavailableError } from "../lib/ollama/client";
 
 function parseArgs(argv: string[]) {
@@ -48,6 +49,7 @@ async function warm(model: string): Promise<void> {
 interface RunResult {
   text: string;
   ms: number;
+  violations: Violation[];
   error?: string;
 }
 
@@ -56,7 +58,8 @@ async function runOne(fixture: BreakdownFixture, model: string): Promise<RunResu
   const started = performance.now();
   try {
     const text = await collect(await streamChat({ model, system, user }));
-    return { text, ms: performance.now() - started };
+    const { violations } = scoreBreakdown(text, fixture.input);
+    return { text, ms: performance.now() - started, violations };
   } catch (err) {
     const error =
       err instanceof OllamaUnavailableError
@@ -64,8 +67,14 @@ async function runOne(fixture: BreakdownFixture, model: string): Promise<RunResu
         : err instanceof Error
           ? err.message
           : String(err);
-    return { text: "", ms: performance.now() - started, error };
+    return { text: "", ms: performance.now() - started, violations: [], error };
   }
+}
+
+function renderViolations(violations: Violation[]): string {
+  if (violations.length === 0) return "**score: clean — 0 violations**";
+  const lines = violations.map((v) => `> - \`${v.rule}\` — ${v.detail}`);
+  return [`**score: ${violations.length} violation(s)**`, "", ...lines].join("\n");
 }
 
 function renderInputTable(f: BreakdownFixture): string {
@@ -104,10 +113,17 @@ async function main() {
     parts.push(`## ${fixture.id}`, ``, renderInputTable(fixture), ``);
     for (const model of models) {
       process.stdout.write(`  ${model}… `);
-      const { text, ms, error } = await runOne(fixture, model);
-      console.log(error ? `error (${(ms / 1000).toFixed(1)}s)` : `${(ms / 1000).toFixed(1)}s`);
+      const { text, ms, violations, error } = await runOne(fixture, model);
+      const tag = error
+        ? `error (${(ms / 1000).toFixed(1)}s)`
+        : `${(ms / 1000).toFixed(1)}s — ${violations.length} violation(s)`;
+      console.log(tag);
       parts.push(`### \`${model}\` — ${(ms / 1000).toFixed(1)}s`, ``);
-      parts.push(error ? `> **${error}**` : text.trim(), ``);
+      if (error) {
+        parts.push(`> **${error}**`, ``);
+      } else {
+        parts.push(renderViolations(violations), ``, text.trim(), ``);
+      }
     }
   }
 
