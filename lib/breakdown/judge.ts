@@ -69,9 +69,12 @@ function extractJsonBlock(raw: string): string | undefined {
 export function parseJudgeResponse(raw: string): JudgeResult {
   const block = extractJsonBlock(raw);
   if (!block) return { ok: false, raw };
+  // Small models routinely emit a trailing comma before a closing ] or } —
+  // strict JSON.parse rejects it, so drop those before parsing.
+  const cleaned = block.replace(/,(\s*[}\]])/g, "$1");
   let obj: Record<string, unknown>;
   try {
-    obj = JSON.parse(block) as Record<string, unknown>;
+    obj = JSON.parse(cleaned) as Record<string, unknown>;
   } catch {
     return { ok: false, raw };
   }

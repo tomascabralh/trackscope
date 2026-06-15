@@ -71,6 +71,27 @@ describe("parseJudgeResponse", () => {
     expect(result.score.softViolations).toEqual([]);
   });
 
+  it("tolerates the pretty-printed JSON with trailing commas that 8b models emit", () => {
+    const raw = [
+      "{",
+      '  "specificity": 4,',
+      '  "usefulness": 3,',
+      '  "voice": 2,',
+      '  "overall": 6,',
+      '  "soft_violations": [',
+      '    "named a kick in the drop",',
+      "  ],",
+      '  "notes": "decent but soft on voice",',
+      "}",
+    ].join("\n");
+    const result = parseJudgeResponse(raw);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.score.overall).toBe(6);
+    expect(result.score.voice).toBe(2);
+    expect(result.score.softViolations).toEqual(["named a kick in the drop"]);
+  });
+
   it("clamps out-of-range scores to their valid bounds", () => {
     const raw = JSON.stringify({
       specificity: 9,
