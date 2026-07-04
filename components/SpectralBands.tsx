@@ -1,7 +1,6 @@
 "use client";
 
 import type { BandFrame, Section } from "@/lib/audio/types";
-import SectionHeading from "./SectionHeading";
 
 interface SpectralBandsProps {
   series: BandFrame[];
@@ -48,7 +47,21 @@ export default function SpectralBands({ series, durationS, sections }: SpectralB
 
   return (
     <div>
-      <SectionHeading title="spectral balance" />
+      <p
+        style={{
+          fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+          fontSize: 13.5,
+          lineHeight: 1.65,
+          color: "#888",
+          margin: "0 0 1.1rem",
+        }}
+      >
+        How the track&apos;s energy is spread across five frequency bands over
+        time — from sub-bass up to the highs. Brighter lanes mean more energy in
+        that band at that moment: watch where the low end drops out in a
+        breakdown, when the highs open up into a drop, and how full the mix sits
+        section to section.
+      </p>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         style={{ width: "100%", height: "auto", display: "block" }}

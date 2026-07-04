@@ -8,7 +8,8 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "eval:breakdown": "tsx scripts/eval-breakdown.ts"
+    "eval:breakdown": "tsx scripts/eval-breakdown.ts",
+    "judge:selftest": "tsx scripts/judge-selftest.ts"
   },
   "dependencies": {
     "essentia.js": "^0.1.3",

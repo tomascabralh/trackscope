@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { BreakdownInput } from "@/lib/breakdown/prompt";
 import { isDemoMode, REPO_URL } from "@/lib/demo";
-import SectionHeading from "./SectionHeading";
 
 type Status = "streaming" | "done" | "error";
 
@@ -155,7 +154,6 @@ function NoteCard({ section, featured }: { section: NoteSection; featured?: bool
 function DemoNotice() {
   return (
     <section>
-      <SectionHeading title="production notes" />
       <p style={{ color: "#888", fontSize: 13.5, fontFamily: MONO, lineHeight: 1.62 }}>
         the production notes are written by a local Ollama model and are off in
         this hosted demo — everything above ran in your browser.{" "}
@@ -242,32 +240,35 @@ function LiveBreakdown({ input }: { input: BreakdownInput }) {
 
   return (
     <section>
-      <SectionHeading
-        title="production notes"
-        right={
-          <>
-            {status === "streaming" && text && (
-              <span style={{ color: "#666", fontSize: 11, fontFamily: MONO }}>generating…</span>
-            )}
-            {(status === "done" || isError) && (
-              <button
-                onClick={run}
-                style={{
-                  fontFamily: MONO,
-                  fontSize: 11,
-                  background: "transparent",
-                  color: "#888",
-                  border: "1px solid #2a2a2a",
-                  padding: "0.3rem 0.65rem",
-                  cursor: "pointer",
-                }}
-              >
-                {isError ? "retry" : "regenerate"}
-              </button>
-            )}
-          </>
-        }
-      />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          minHeight: 28,
+          margin: "0 0 1.1rem",
+        }}
+      >
+        {status === "streaming" && text && (
+          <span style={{ color: "#666", fontSize: 11, fontFamily: MONO }}>generating…</span>
+        )}
+        {(status === "done" || isError) && (
+          <button
+            onClick={run}
+            style={{
+              fontFamily: MONO,
+              fontSize: 11,
+              background: "transparent",
+              color: "#888",
+              border: "1px solid #2a2a2a",
+              padding: "0.3rem 0.65rem",
+              cursor: "pointer",
+            }}
+          >
+            {isError ? "retry" : "regenerate"}
+          </button>
+        )}
+      </div>
 
       <div style={{ fontFamily: SANS }}>
         {isError ? (

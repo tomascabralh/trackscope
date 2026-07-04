@@ -39,6 +39,8 @@ Speak in relative language, not numbers. You're given tilt words, not measuremen
 
 Make it useful: each section comment ends with one concrete do-it-now takeaway (a mix move, an arrangement idea, something to steal), grounded in what the data actually shows — not generic advice, and phrased in bands/energy, not named instruments.
 
+Target voice (illustrative — match the register, not the content): "Sub takes over and the mids scoop out — that's the weight. Low-mids are crowding the bottom octave, so notch around 250 to keep the sub punching clean." That's the bar: what the bands are doing, then one concrete move, in two sentences. No "sense of energy", no named instruments, no hype.
+
 Before writing, check every line: no invented dB/LUFS numbers, no named instruments or sounds. If a sentence breaks either rule, rewrite it in terms of bands and energy.
 
 Output — markdown only, no preamble and no closing remarks:
