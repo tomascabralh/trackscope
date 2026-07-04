@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import SectionHeading from "./SectionHeading";
-import { WipBadge } from "./Tabs";
 import { buildAbletonPrompt } from "@/lib/bridge/build-prompt";
 import type { BreakdownInput } from "@/lib/breakdown/prompt";
 
@@ -21,7 +19,6 @@ export default function AbletonPanel({ input }: { input: BreakdownInput }) {
 
   return (
     <section>
-      <SectionHeading title="ableton-mcp" right={<WipBadge />} />
       <p
         style={{
           fontFamily: SANS,
