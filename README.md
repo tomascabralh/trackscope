@@ -18,6 +18,10 @@ Drop an audio file in the browser (Chrome, desktop) and trackscope:
 The audio never gets uploaded anywhere, and the LLM is whatever model you run
 locally. trackscope is a single-page Next.js app.
 
+**Live demo:** [trackscope-six.vercel.app](https://trackscope-six.vercel.app).
+The hosted demo runs the full client-side analysis; the LLM breakdown needs a
+local Ollama, so it's switched off there and shows a "run it locally" notice.
+
 ## Requirements
 
 - **Node** 18+ and **npm**
@@ -59,7 +63,18 @@ npm run dev      # dev server (Turbopack)
 npm run build    # production build
 npm run start    # serve the production build
 npm run test     # vitest run
+npm run eval:breakdown   # run the breakdown eval harness (needs Ollama)
 ```
+
+## Evaluating the breakdown
+
+Prompt and model changes are judged on evidence, not one-off reads.
+`npm run eval:breakdown` runs genre fixtures through the real prompt builder and
+the local Ollama client, scores the outputs with rule-based checks (invented dB
+values, named instruments the analysis can't know) and an LLM-as-judge, and
+writes them side by side to `eval-out/`. `scripts/judge-selftest.ts` checks that
+the judge can actually tell good breakdowns from bad ones. A few-shot example
+in the prompt lifted the judge's overall score from about 6.7 to about 7.2.
 
 ## Scope
 
@@ -67,7 +82,8 @@ npm run test     # vitest run
 streaming local-LLM breakdown.
 
 **Deferred / not built:** YouTube ingestion, persistence and shareable
-permalinks, and rate-limiting. There's no hosted instance — run it locally.
+permalinks, and rate-limiting. The hosted demo covers analysis only; run it
+locally for the LLM breakdown.
 
 The system prompt that generates the breakdown is the heart of the project and
 is still being tuned; breakdown quality will keep improving.
